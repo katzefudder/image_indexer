@@ -33,7 +33,7 @@ thumbnails
     - ...
 ```
 
-Processing 74 images (roughly 3.5 MByte each) takes about 6.2 seconds on my 8-core 2019 MacBook using 8 threads to process data.
+Processing 74 images (roughly 3.0 MByte each) takes about 6.2 seconds on my 8-core 2019 MacBook using 8 threads to process data.
 
 ```
 docker run -v $(pwd):/app mypy indexer.py images target -t 8      
@@ -120,5 +120,5 @@ Omitted files:
 --------------------------------------------
 /app/images/.DS_Store
 
-Indexing took 0:00:06.207444 for 74 files
+Indexing took 0:00:06.564612 for 74 files (223.75 MB)
 ```
