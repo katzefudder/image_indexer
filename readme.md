@@ -17,6 +17,7 @@ To spin up a Docker container to run my indexer use the following after having b
 I often have to process many photos, resize them, watermark them, do something else about them programmatically. 
 Say, you end up with a folder of 74 hi-res images of a hockey game (roughly 260MB) and rely on a structure like this
 
+```
 originals
     - hockey_game_1
     - hockey_game_2
@@ -30,6 +31,7 @@ thumbnails
         - min_resolution
         - ...
     - ...
+```
 
 Processing 74 images (roughly 3.5 MByte each) takes about 6.2 seconds on my 8-core 2019 MacBook using 8 threads to process data.
 
