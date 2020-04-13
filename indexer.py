@@ -16,6 +16,7 @@ def main(source, target, threads):
     indexer = library.Library(source, target)
     indexer.setThreads(threads)
     indexer.process_images()
+    #indexer.setMoveOriginalFiles(False)
 
 if __name__ == "__main__":
     main()

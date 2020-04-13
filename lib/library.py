@@ -1,4 +1,4 @@
-import os, sys, glob, ntpath
+import os, sys, glob, ntpath, math
 from datetime import datetime
 from PIL import Image, IptcImagePlugin, ExifTags
 from multiprocessing import pool
@@ -7,14 +7,14 @@ import json
 
 class Library:
     size = {"min":250, "med":450, "max":800}
-
     threads = 1
-
     sourceDir = ""
+    targetDir = ''
     files = []
     processedFiles = []
+    processedFileSize = 0
     omittedFiles = []
-    targetDir = ''
+    moveOriginalFiles = True
     watermark = "watermark.png"
     
     exifData = []
@@ -23,6 +23,9 @@ class Library:
         self.sourceDir = sourceDir
         self.targetDir = targetDir
         self.files = self.enumerate_files(self.sourceDir)
+
+    def setMoveOriginalFiles(self, moveOriginalFiles):
+        self.moveOriginalFiles = moveOriginalFiles
 
     def setThreads(self, threads):
         self.threads = threads
@@ -47,7 +50,7 @@ class Library:
         print("\nOmitted files:")
         print("--------------------------------------------")
         print(*self.omittedFiles, sep='\n')
-        print("\nIndexing took %s for %d files" % ((datetime.now() - begin_time), len(self.files)))
+        print("\nIndexing took %s for %d files (%s)" % ((datetime.now() - begin_time), len(self.files), self.convert_size(self.processedFileSize)))
 
     def serializeMetadata(self):
         with open('data.json', 'w', encoding='utf-8') as file:
@@ -85,13 +88,25 @@ class Library:
             # all other files should be ommitted
             self.omittedFiles.append(source)
 
+    def convert_size(self, sizeByte):
+        if sizeByte == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(sizeByte, 1024)))
+        p = math.pow(1024, i)
+        s = round(sizeByte / p, 2)
+        return "%s %s" % (s, size_name[i])
+
     def handleProcessedFile(self, photo):
         self.extractExif(photo) # extract Exif metadata
+        self.processedFileSize += os.path.getsize(photo.filename) # sum up file sizes
         self.processedFiles.append(photo.filename) # add the processed file to the list of processed files
-        processedImageDir = self.targetDir + "/original" # processed images should go to this folder
-        self.createDirectory(processedImageDir) # create directory for original files
-        processedImage = processedImageDir + "/" + ntpath.basename(photo.filename)
-        os.rename(photo.filename, processedImage) # when processed, move the processed file away
+        
+        if self.moveOriginalFiles:
+            processedImageDir = self.targetDir + "/original" # processed images should go to this folder
+            self.createDirectory(processedImageDir) # create directory for original files
+            processedImage = processedImageDir + "/" + ntpath.basename(photo.filename)
+            os.rename(photo.filename, processedImage) # when processed, move the processed file away
 
     def createDirectory(self, directory):
         # create thumbnail directory, ignore if existing
