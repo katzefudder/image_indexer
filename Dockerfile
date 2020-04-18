@@ -11,5 +11,3 @@ RUN apk add --no-cache --virtual .build-deps build-base linux-headers g++ jpeg-d
 WORKDIR /app
 
 RUN pip3 install -r /app/requirements.txt
-
-ENTRYPOINT ["python"]

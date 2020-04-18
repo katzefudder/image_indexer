@@ -22,7 +22,7 @@ class Library:
     def __init__(self, sourceDir, targetDir):
         self.sourceDir = sourceDir
         self.targetDir = targetDir
-        self.files = self.enumerate_files(self.sourceDir)
+        self.files = self.walk_directory(self.sourceDir)
 
     def setMoveOriginalFiles(self, moveOriginalFiles):
         self.moveOriginalFiles = moveOriginalFiles
@@ -153,7 +153,8 @@ class Library:
         layer.paste(watermark, (x,y))
         return Image.composite(layer, photo, layer)
 
-    def enumerate_files(self, path):
+    def walk_directory(self, path):
+        """ walk over files in provided directory and return a list of files """
         files = []
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
