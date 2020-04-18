@@ -2,3 +2,4 @@ target/*
 .DS_Store
 data.json
 test/*
+lib/__pycache__
