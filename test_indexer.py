@@ -2,9 +2,6 @@ import os, shutil
 import pytest
 from lib import library
 
-def prepare_tests():
-    os.makedirs('./test/target', exist_ok=True)
-
 class TestIndexer():
     __indexer = ""
 
@@ -19,12 +16,14 @@ class TestIndexer():
     def test_indexer(self):
         self.__prepare_tests()
 
-        assert(self.__indexer.sourceDir == "/app/images"), "sourceDir should be /app/images"
-        assert(self.__indexer.targetDir == "/app/test/target"), "targetDir should be /app/test/target"
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        assert(self.__indexer.sourceDir == cwd + "/images"), "sourceDir should be /images"
+        assert(self.__indexer.targetDir == cwd + "/test/target"), "targetDir should be /test/target"
         assert len(self.__indexer.files) == 1, "Length of file list should be 1"
 
     def __del__(self):
-        shutil.rmtree('./test/target')
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        shutil.rmtree(cwd + '/test/target')
 
 if __name__ == "__main__":
     test = TestIndexer()
