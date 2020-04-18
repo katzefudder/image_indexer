@@ -21,10 +21,6 @@ class TestIndexer():
         assert(self.__indexer.targetDir == cwd + "/test/target"), "targetDir should be /test/target"
         assert len(self.__indexer.files) == 1, "Length of file list should be 1"
 
-    def __del__(self):
-        cwd = os.path.dirname(os.path.realpath(__file__))
-        shutil.rmtree(cwd + '/test/target')
-
 if __name__ == "__main__":
     test = TestIndexer()
     test.test_indexer()
