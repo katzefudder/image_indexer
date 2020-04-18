@@ -1,4 +1,4 @@
-import os, sys, glob, ntpath, math
+import os, shutil, sys, glob, ntpath, math
 from datetime import datetime
 from PIL import Image, IptcImagePlugin, ExifTags
 from multiprocessing import pool
@@ -14,7 +14,7 @@ class Library:
     processedFiles = []
     processedFileSize = 0
     omittedFiles = []
-    moveOriginalFiles = True
+    removeOriginalFiles = False
     watermark = "watermark.png"
     
     exifData = []
@@ -24,8 +24,8 @@ class Library:
         self.targetDir = targetDir
         self.files = self.walk_directory(self.sourceDir)
 
-    def setMoveOriginalFiles(self, moveOriginalFiles):
-        self.moveOriginalFiles = moveOriginalFiles
+    def setRemoveOriginalFiles(self, removeOriginalFiles):
+        self.removeOriginalFiles = removeOriginalFiles
 
     def setThreads(self, threads):
         self.threads = threads
@@ -102,11 +102,13 @@ class Library:
         self.processedFileSize += os.path.getsize(photo.filename) # sum up file sizes
         self.processedFiles.append(photo.filename) # add the processed file to the list of processed files
         
-        if self.moveOriginalFiles:
-            processedImageDir = self.targetDir + "/original" # processed images should go to this folder
-            self.createDirectory(processedImageDir) # create directory for original files
-            processedImage = processedImageDir + "/" + ntpath.basename(photo.filename)
-            os.rename(photo.filename, processedImage) # when processed, move the processed file away
+        processedImageDir = self.targetDir + "/original" # processed images should go to this folder
+        self.createDirectory(processedImageDir) # create directory for original files
+        processedImage = processedImageDir + "/" + ntpath.basename(photo.filename)
+        shutil.copyfile(photo.filename, processedImage) # when processed, move the processed file away
+
+        if self.removeOriginalFiles:
+            os.remove(photo.filename)
 
     def createDirectory(self, directory):
         # create thumbnail directory, ignore if existing
