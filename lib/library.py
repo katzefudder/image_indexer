@@ -6,7 +6,7 @@ from multiprocessing.dummy import Pool
 import json
 
 class Library:
-    size = {"min":250, "med":450, "max":800}
+    thumbnail_sizes = {"min":250, "med":450, "max":800}
     threads = 1
     sourceDir = ""
     targetDir = ''
@@ -19,10 +19,15 @@ class Library:
     
     exifData = []
 
+    __debugMode = False
+
     def __init__(self, sourceDir, targetDir):
         self.sourceDir = sourceDir
         self.targetDir = targetDir
         self.files = self.walk_directory(self.sourceDir)
+
+    def setDebugMode(self, debug):
+        self.__debugMode = debug
 
     def setRemoveOriginalFiles(self, removeOriginalFiles):
         self.removeOriginalFiles = removeOriginalFiles
@@ -38,19 +43,20 @@ class Library:
 
     def process_images(self):
         begin_time = datetime.now()
-        print("\nUse %d threads to index %d files" % (self.threads, len(self.files)))
         self.useThreading(self.threads)
         
         # export all exif data to json file
         self.serializeMetadata()
 
-        print("\nProcessed Files:")
-        print("--------------------------------------------")
-        print(*self.processedFiles, sep='\n')
-        print("\nOmitted files:")
-        print("--------------------------------------------")
-        print(*self.omittedFiles, sep='\n')
-        print("\nIndexing took %s for %d files (%s)" % ((datetime.now() - begin_time), len(self.files), self.convert_size(self.processedFileSize)))
+        if self.__debugMode:
+            print("\nUse %d threads to index %d files" % (self.threads, len(self.files)))
+            print("\nProcessed Files:")
+            print("--------------------------------------------")
+            print(*self.processedFiles, sep='\n')
+            print("\nOmitted files:")
+            print("--------------------------------------------")
+            print(*self.omittedFiles, sep='\n')
+            print("\nIndexing took %s for %d files (%s)" % ((datetime.now() - begin_time), len(self.files), self.convert_size(self.processedFileSize)))
 
     def serializeMetadata(self):
         with open('data.json', 'w', encoding='utf-8') as file:
@@ -65,21 +71,24 @@ class Library:
         if extension == extensionAllowed:
             # iterate over different image sizes
             originalPhoto = Image.open(source)
+            # get the folder containing the image to process
+            originalFolder = os.path.dirname(source).split('/')[-1]
             
-            for category, size in self.size.items():
-                thumbTarget = self.targetDir + "/" + category
+            for size, dimension in self.thumbnail_sizes.items():
+                thumbTarget = self.targetDir + "/" + size + "/" + originalFolder
                 
                 # create thumbnail directory, ignore if existing
                 self.createDirectory(thumbTarget)
 
                 photo = Image.open(source)
 
-                photo.thumbnail((size, size), Image.ANTIALIAS)
+                photo.thumbnail((dimension, dimension), Image.ANTIALIAS)
                 thumbnailFilename = thumbTarget + "/" + os.path.basename(source)
                 # add image to list
 
-                if size > self.size['med']:
-                    photo = self.addWatermark(self.size['max'], photo)
+                # add a watermark to all images larger than medium sized thumbnails
+                if dimension > self.thumbnail_sizes['med']:
+                    photo = self.addWatermark(self.thumbnail_sizes['max'], photo)
 
                 photo.save(thumbnailFilename, "JPEG")
                 
@@ -101,8 +110,10 @@ class Library:
         self.extractExif(photo) # extract Exif metadata
         self.processedFileSize += os.path.getsize(photo.filename) # sum up file sizes
         self.processedFiles.append(photo.filename) # add the processed file to the list of processed files
+
+        originalFolder = os.path.dirname(photo.filename).split('/')[-1]
         
-        processedImageDir = self.targetDir + "/original" # processed images should go to this folder
+        processedImageDir = self.targetDir + "/original/" + originalFolder # processed images should go to this folder
         self.createDirectory(processedImageDir) # create directory for original files
         processedImage = processedImageDir + "/" + ntpath.basename(photo.filename)
         shutil.copyfile(photo.filename, processedImage) # when processed, move the processed file away
@@ -114,7 +125,7 @@ class Library:
         # create thumbnail directory, ignore if existing
         if not os.path.exists(directory):
             try:
-                os.mkdir(directory)
+                os.makedirs(directory, exist_ok=True)
             except FileExistsError:
                 pass
 
