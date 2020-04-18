@@ -1,3 +1,4 @@
 pillow
 Click
 pytest
+pytest-cov
