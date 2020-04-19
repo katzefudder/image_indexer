@@ -6,4 +6,4 @@ python:
 install:
   - pip install --quiet -r requirements.txt
 script:
-  - pytest --cov
+  - pytest --cov=lib
