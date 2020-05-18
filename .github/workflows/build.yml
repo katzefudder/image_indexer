@@ -1,0 +1,16 @@
+name: Testing indexer
+
+on:
+    push:
+        branches: master
+    [pull_request]
+
+jobs: 
+    testing:
+        name: Unit Tests
+        runs-on: ubuntu-18.04
+        steps:
+            - name: Run unit tests
+            run: |
+            pip install pytest
+            pytest
