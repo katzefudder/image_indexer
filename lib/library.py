@@ -1,4 +1,4 @@
-import os, shutil, sys, glob, ntpath, math
+import os, shutil, sys, glob, ntpath, math, multiprocessing
 from datetime import datetime
 from PIL import Image, IptcImagePlugin, ExifTags
 from multiprocessing import pool
@@ -19,12 +19,15 @@ class Library:
     
     exifData = []
 
-    __debugMode = False
+    __debugMode = True
 
     def __init__(self, sourceDir, targetDir):
         self.sourceDir = sourceDir
         self.targetDir = targetDir
         self.files = self.walk_directory(self.sourceDir)
+
+    def _getCpuCount(self):
+        return multiprocessing.cpu_count()
 
     def setDebugMode(self, debug):
         self.__debugMode = debug
@@ -43,6 +46,9 @@ class Library:
 
     def process_images(self):
         begin_time = datetime.now()
+        if self.threads <= 0:
+            self.threads = self._getCpuCount()
+
         self.useThreading(self.threads)
         
         # export all exif data to json file

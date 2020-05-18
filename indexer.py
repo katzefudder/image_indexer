@@ -1,22 +1,19 @@
-import os, sys, glob
+import os, sys, glob, multiprocessing
 import click
 from lib import library
 
 @click.command()
 @click.argument('source', type=click.Path(exists=True))
 @click.argument('target', type=click.Path(exists=True))
-@click.option('--threads', '-t', type=int)
+@click.option('--threads', '-t', type=int, default=0, help='Number of threads')
 
 def main(source, target, threads):
-    if threads is None:
-        threads = 8
     cwd = os.path.dirname(os.path.realpath(__file__))
     source = cwd + "/" + source
     target = cwd + "/" + target
     indexer = library.Library(source, target)
     indexer.setThreads(threads)
     indexer.process_images()
-    #indexer.setMoveOriginalFiles(False)
 
 if __name__ == "__main__":
     main()
