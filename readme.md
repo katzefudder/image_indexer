@@ -1,5 +1,6 @@
 # Multi-Threaded Indexer for jpg images
 [![Build Status](https://travis-ci.org/katzefudder/image_indexer.svg?branch=master)](https://travis-ci.org/katzefudder/image_indexer)
+![Testing Indexer](https://github.com/katzefudder/image_indexer/workflows/Testing%20Indexer/badge.svg)
 
 Started as a side project for myself to get my head into image processing and multi-threading in Python.
 As a photographer, I tend to shoot lots of photos, especially when shooting ice hockey
