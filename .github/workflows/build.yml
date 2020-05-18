@@ -1,16 +1,20 @@
 name: Testing indexer
-
 on:
     push:
         branches: master
     [pull_request]
+jobs:
 
-jobs: 
-    testing:
-        name: Unit Tests
-        runs-on: ubuntu-18.04
-        steps:
-            - name: Run unit tests
-            run: |
-            pip install pytest
-            pytest
+  qa:
+    name: Unit Tests
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.8
+      - name: Run unit tests
+        run: |
+          pip install pytest
+          pytest
