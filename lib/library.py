@@ -1,5 +1,6 @@
 import os, shutil, sys, glob, ntpath, math, multiprocessing
 from datetime import datetime
+from pathlib import Path
 from PIL import Image, IptcImagePlugin, ExifTags
 from multiprocessing import pool
 from multiprocessing.dummy import Pool 
@@ -12,12 +13,13 @@ class Library:
     targetDir = ''
     files = []
     processedFiles = []
+    currentFile = ''
     processedFileSize = 0
     omittedFiles = []
     removeOriginalFiles = False
     watermark = "watermark.png"
     
-    exifData = []
+    metaData = {} # contains both exif as iptc tags in a serializable dict
 
     __debugMode = True
 
@@ -65,8 +67,8 @@ class Library:
             print("\nIndexing took %s for %d files (%s)" % ((datetime.now() - begin_time), len(self.files), self.convert_size(self.processedFileSize)))
 
     def serializeMetadata(self):
-        with open('data.json', 'w', encoding='utf-8') as file:
-            json.dump(self.exifData, file, ensure_ascii=False, indent=4)    
+        with open('meta.json', 'w', encoding='utf-8') as file:
+            json.dump(self.metaData, file, ensure_ascii=False, indent=4)
 
     def useThreading(self, threads):
         pool = Pool(threads)
@@ -113,7 +115,10 @@ class Library:
         return "%s %s" % (s, size_name[i])
 
     def handleProcessedFile(self, photo):
+        self.currentFile = Path(photo.filename).stem
+        self.metaData[self.currentFile] = {}
         self.extractExif(photo) # extract Exif metadata
+        self.extractIptc(photo)
         self.processedFileSize += os.path.getsize(photo.filename) # sum up file sizes
         self.processedFiles.append(photo.filename) # add the processed file to the list of processed files
 
@@ -145,17 +150,54 @@ class Library:
         exif.update({'filename':image.filename})
         exif.update({'width':image.size[0]})
         exif.update({'height':image.size[1]})
-        self.exifData.append(exif)
+        self.metaData[self.currentFile]['exif'] = exif
 
     def extractIptc(self, image):
-        iptc = IptcImagePlugin.getiptcinfo(image)
+        iptc = {}
 
-        if iptc:
-            for k, v in iptc.items():
-                print("{} {}".format(k, repr(v.decode())))
-        else:
-            print(" This image has no iptc info")
+        iptc_tags = {
+            (1, 90): 'CodedCharacterSet',
+            (2, 0): 'Whatever',
+            (2, 5): 'ObjectName',
+            (2, 10): 'Urgency',
+            (2, 15): 'Category',
+            (2, 20): 'Subcategories',
+            (2, 25): 'Keywords',
+            (2, 40): 'SecialInstructions',
+            (2, 55): 'CreationDate',
+            (2, 60): 'CreationTime',
+            (2, 62): 'DigitizationDate',
+            (2, 80): 'AuthorByline',
+            (2, 85): 'AuthorTitle',
+            (2, 90): 'City',
+            (2, 92): 'SubLocation',
+            (2, 95): 'State',
+            (2, 100): 'CountryCode',
+            (2, 101): 'Country',
+            (2, 103): 'OTR',
+            (2, 105): 'Headline',
+            (2, 110): 'Source',
+            (2, 115): 'PhotoSource',
+            (2, 116): 'Copyright',
+            (2, 120): 'Caption',
+            (2, 122): 'CaptionWriter',
+        }
 
+        iptc_info = IptcImagePlugin.getiptcinfo(image) or {}
+        
+        for tag, value in iptc_info.items():
+            decoded = iptc_tags.get(tag, str(tag))
+            if isinstance(value, (bytes, bytearray)):
+                iptc[decoded] = value.decode('utf-8')
+            elif isinstance(value, (list)):
+                for k, v in enumerate(value):
+                    value[k] = v.decode('utf-8')
+                iptc[decoded] = value
+            else:
+                iptc[decoded] = str(value)
+
+        self.metaData[self.currentFile]['iptc'] = iptc
+        
     def addWatermark(self, basewidth, photo):
         watermark = Image.open(self.watermark)
         wpercent = (basewidth/float(watermark.size[0]))
