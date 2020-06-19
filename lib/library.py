@@ -2,6 +2,7 @@ import os, shutil, sys, glob, ntpath, math, multiprocessing
 from datetime import datetime
 from pathlib import Path
 from PIL import Image, IptcImagePlugin, ExifTags
+import piexif
 from multiprocessing import pool
 from multiprocessing.dummy import Pool 
 import json
@@ -98,7 +99,13 @@ class Library:
                 if dimension > self.thumbnail_sizes['med']:
                     photo = self.addWatermark(self.thumbnail_sizes['max'], photo)
 
-                photo.save(thumbnailFilename, "JPEG")
+                copyright = {
+                    piexif.ImageIFD.Software: u"indexed by catpyindexer © katzefudder.de 2020"
+                }
+
+                exif_dict = {"0th":copyright}
+                exif_bytes = piexif.dump(exif_dict)
+                photo.save(thumbnailFilename, "JPEG", exif=exif_bytes)
                 
             self.handleProcessedFile(originalPhoto)
         else:
