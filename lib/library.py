@@ -100,7 +100,7 @@ class Library:
                     photo = self.addWatermark(self.thumbnail_sizes['max'], photo)
 
                 copyright = {
-                    piexif.ImageIFD.Software: u"indexed by catpyindexer © katzefudder.de 2020"
+                    piexif.ImageIFD.Software: u"indexed by catpyindexer, katzefudder.de 2020"
                 }
 
                 exif_dict = {"0th":copyright}
