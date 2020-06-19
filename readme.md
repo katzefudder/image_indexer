@@ -14,7 +14,7 @@ To build the Docker image use the following
 `docker build -t mypy .`
 
 To spin up a Docker container to run my indexer use the following after having built the Docker image
-`docker run -v $(pwd):/app mypy indexer.py images target -t 8`
+`docker run -v $(pwd):/app mypy ./indexer.py images target -t 8`
 
 ## What it does
 I often have to process many photos, resize them, watermark them, do something else about them programmatically. 
