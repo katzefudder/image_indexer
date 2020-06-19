@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os, sys, glob, multiprocessing
 import click
 from lib import library
