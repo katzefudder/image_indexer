@@ -7,7 +7,7 @@ from multiprocessing import pool
 from multiprocessing.dummy import Pool 
 import json
 
-class Library:
+class Indexer:
     thumbnail_sizes = {"min":250, "med":450, "max":800}
     threads = 1
     sourceDir = ""
