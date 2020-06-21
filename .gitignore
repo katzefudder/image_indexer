@@ -1,5 +1,6 @@
 target/*
 .DS_Store
 data.json
+__pycache__/*
 test/*
-lib/__pycache__
+lib/__pycache__/*
