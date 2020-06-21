@@ -41,11 +41,12 @@ class TestIndexer():
     def test_meta_json_exists(self):
         self.__prepare_tests()
         assert(os.path.exists(self.__cwd + "/meta.json"))
+        processedFile = self.__indexer.processedFiles[0]
 
         with open('meta.json') as json_file:
             data = json.load(json_file)
             assert(data['testimage']['iptc']['ObjectName'] == 'in der DEL 2 - EC Bad Nauheim gegen ESV Kaufbeuren')
-            assert(data['testimage']['exif']['filename'] == '/app/images/a_gallery/testimage.jpg')
+            assert(data['testimage']['exif']['filename'] == processedFile)
 
     def __del__(self):
         shutil.rmtree(self.__cwd + '/test/target')
