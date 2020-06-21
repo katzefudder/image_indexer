@@ -1,6 +1,6 @@
-import os, shutil
+import os, shutil, json
 import pytest
-from lib import library
+from lib import indexer
 
 class TestIndexer():
     __indexer = ""
@@ -12,7 +12,7 @@ class TestIndexer():
         
         source = self.__cwd + "/images" 
         target = self.__cwd + "/test"
-        self.__indexer = library.Library(source, target)
+        self.__indexer = indexer.Indexer(source, target)
 
     def test_basic_init_indexer(self):
         self.__prepare_tests()
@@ -37,6 +37,15 @@ class TestIndexer():
         assert(os.path.exists(self.__cwd + "/test/med/a_gallery/testimage.jpg"))
         assert(os.path.exists(self.__cwd + "/test/min/a_gallery/testimage.jpg"))
         assert(os.path.exists(self.__cwd + "/test/original/a_gallery/testimage.jpg"))        
+
+    def test_meta_json_exists(self):
+        self.__prepare_tests()
+        assert(os.path.exists(self.__cwd + "/meta.json"))
+
+        with open('meta.json') as json_file:
+            data = json.load(json_file)
+            assert(data['testimage']['iptc']['ObjectName'] == 'in der DEL 2 - EC Bad Nauheim gegen ESV Kaufbeuren')
+            assert(data['testimage']['exif']['filename'] == '/app/images/a_gallery/testimage.jpg')
 
     def __del__(self):
         shutil.rmtree(self.__cwd + '/test/target')
